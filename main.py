@@ -6,12 +6,12 @@ import seaborn as sns
 
 def main():
     path = "data.csv"
-    macs(path)
+    macd(path)
 
 
-def macs(path: str) -> None:
+def macd(path: str) -> None:
     """
-    This function calculates the MACS for the given data and plots the graph
+    This function calculates the MACD for the given data and plots the graph
     :param path: path to the data file
     :type path: str
     :return: None
@@ -35,6 +35,12 @@ def calculate_slow_ema(date: str, dates: pd.Series, prices: pd.Series) -> float:
     :param prices: closing prices of the data
     :return: slow EMA for the given date
     """
+    end_index = dates[dates == date].index[0]
+    start_index = 0
+    if end_index < 25:                                          # when the current date is earlier than 26th
+        start_index = end_index / 2
+    else:
+        start_index = end_index - 11
     pass
 
 
@@ -46,6 +52,10 @@ def calculate_fast_ema(date: str, dates: pd.Series, prices: pd.Series) -> float:
     :param prices: closing prices of the data
     :return: fast EMA for the given date
     """
+    end_index = dates[dates == date].index[0]
+    start_index = 0
+    if end_index >= 25:                  # when the current date is 26th or later, then we can perform full calculations
+        start_index = end_index - 25
     pass
 
 
