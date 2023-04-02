@@ -38,8 +38,8 @@ def plot_stock(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> None:
     plt.xlabel('Date')
     plt.ylabel('Value')
     plt.title('S&P500 closing prices for 1000 days from 27-03-2019')
-    plt.show()
     plt.savefig('stock_prices.png')
+    plt.show()
 
 
 def transform_buy_sell(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> Tuple[pd.Series, pd.Series]:
@@ -101,8 +101,8 @@ def plot_macd(macd: pd.Series, signal: pd.Series, buy: pd.Series, sell: pd.Serie
     plt.ylabel('Value')
     plt.title('MACD')
     plt.legend(['SIGNAL', 'MACD', 'BUY', 'SELL'])
-    plt.show()
     plt.savefig('macd.png')
+    plt.show()
 
 
 def calculate_buy_sell(macd: pd.Series, signal: pd.Series) -> tuple[pd.Series, pd.Series]:
