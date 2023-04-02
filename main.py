@@ -1,8 +1,6 @@
-from typing import Tuple, Any
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -14,8 +12,9 @@ def main():
         data = pd.read_csv(f)
         closing_prices = data.loc[:, 'Close']
     cash = 1000
+    holdings = 0
     print("Initial value: " + str(cash))
-    profit, end_value = calculate_profit(closing_prices, buy, sell, cash)
+    profit, end_value = calculate_profit(closing_prices, buy, sell, cash, holdings)
     print("Final value: " + str(end_value))
     print("Profit: " + str(profit))
     plot_macd(macd, signal, buy, sell)
@@ -42,7 +41,7 @@ def plot_stock(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> None:
     plt.show()
 
 
-def transform_buy_sell(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> Tuple[pd.Series, pd.Series]:
+def transform_buy_sell(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> tuple[pd.Series, pd.Series]:
     """
     This function transforms the buy and sell signals to be plotted with the stock prices
     :param prices: closing prices of the data
@@ -58,17 +57,19 @@ def transform_buy_sell(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> Tu
     return pd.Series(transformed_buy), pd.Series(transformed_sell)
 
 
-def calculate_profit(prices: pd.Series, buy: pd.Series, sell: pd.Series, initial_cash: float) -> tuple[float, float]:
+def calculate_profit(prices: pd.Series, buy: pd.Series, sell: pd.Series, initial_cash: float, initial_holdings: int) ->\
+        tuple[float, float]:
     """
     This function calculates the profit of the given buy and sell signals
     :param prices: closing prices of the data
     :param buy: buy signals
     :param sell: sell signals
     :param initial_cash: initial cash
+    :param initial_holdings: initial holdings
     :return: profit
     """
     value = 0
-    holdings = 0
+    holdings = initial_holdings
     cash = initial_cash
     for i in range(1, len(prices)):
         if not np.isnan(buy.iat[i]):
