@@ -11,14 +11,30 @@ def main():
     with open(path, 'r') as f:
         data = pd.read_csv(f)
         closing_prices = data.loc[:, 'Close']
-    cash = 1000
-    holdings = 0
-    print("Initial value: " + str(cash))
+    cash = 0
+    holdings = 1000
+    print("Initial value: " + str(cash + holdings * closing_prices.iat[0]))
     profit, end_value = calculate_profit(closing_prices, buy, sell, cash, holdings)
     print("Final value: " + str(end_value))
     print("Profit: " + str(profit))
+    print("Value of initial holdings if nothing was done: " + str(holdings * closing_prices.iat[-1] + cash))
+    plot_input_data(closing_prices)
     plot_macd(macd, signal, buy, sell)
     plot_stock(closing_prices, buy, sell)
+
+
+def plot_input_data(prices: pd.Series) -> None:
+    """
+    This function plots the input data
+    :param prices: closing prices of the data
+    :return: None
+    """
+    plt.plot(range(len(prices)), prices)
+    plt.xlabel('Date')
+    plt.ylabel('Value')
+    plt.title('S&P500 (SPX) closing prices for 1000 days from 27-03-2019')
+    plt.savefig('input_data.png')
+    plt.show()
 
 
 def plot_stock(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> None:
@@ -36,7 +52,7 @@ def plot_stock(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> None:
     plt.legend(['Stock Price', 'BUY', 'SELL'])
     plt.xlabel('Date')
     plt.ylabel('Value')
-    plt.title('S&P500 closing prices for 1000 days from 27-03-2019')
+    plt.title('SPX closing prices with buy and sell indicators')
     plt.savefig('stock_prices.png')
     plt.show()
 
@@ -57,7 +73,7 @@ def transform_buy_sell(prices: pd.Series, buy: pd.Series, sell: pd.Series) -> tu
     return pd.Series(transformed_buy), pd.Series(transformed_sell)
 
 
-def calculate_profit(prices: pd.Series, buy: pd.Series, sell: pd.Series, initial_cash: float, initial_holdings: int) ->\
+def calculate_profit(prices: pd.Series, buy: pd.Series, sell: pd.Series, initial_cash: float, initial_holdings: int) -> \
         tuple[float, float]:
     """
     This function calculates the profit of the given buy and sell signals
@@ -74,14 +90,14 @@ def calculate_profit(prices: pd.Series, buy: pd.Series, sell: pd.Series, initial
     for i in range(1, len(prices)):
         if not np.isnan(buy.iat[i]):
             if cash > 0:
-                holdings += cash / prices.iat[i]
-                cash = 0
+                holdings += cash // prices.iat[i]
+                cash -= holdings * prices.iat[i]
         elif not np.isnan(sell.iat[i]):
             if holdings > 0:
                 cash += holdings * prices.iat[i]
                 holdings = 0
         value = holdings * prices.iat[i]
-    profit = value + cash - initial_cash
+    profit = value + cash - initial_cash - initial_holdings * prices.iat[0]
     return profit, value + cash
 
 
@@ -113,16 +129,19 @@ def calculate_buy_sell(macd: pd.Series, signal: pd.Series) -> tuple[pd.Series, p
     :param signal: SIGNAL line values
     :return: buy and sell signals (nan if no signal, MACD value if signal)
     """
-    buy = [np.nan]
-    sell = [np.nan]
+    buy = [np.nan]  # don't buy on the first day
+    sell = [np.nan]  # don't sell on the first day
     for i in range(1, len(macd)):
         if macd[i - 1] < signal[i - 1] and macd[i] >= signal[i]:
+            # MACD crosses SIGNAL from below
             buy.append(macd[i])
             sell.append(np.nan)
         elif macd[i - 1] > signal[i - 1] and macd[i] <= signal[i]:
+            # MACD crosses SIGNAL from above
             buy.append(np.nan)
             sell.append(macd[i])
         else:
+            # no crossing
             buy.append(np.nan)
             sell.append(np.nan)
     return pd.Series(buy), pd.Series(sell)
